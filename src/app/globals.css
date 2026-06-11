@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  /* Sony — base neutra */
+  --brand-black: #0a0a0a;
+  --brand-white: #ffffff;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-400: #9ca3af;
+  --gray-600: #6b7280;
+  --gray-900: #111827;
+
+  /* Som Livre — acentos */
+  --brand-blue: #0057ff;
+  --brand-purple: #7a3fff;
+  --brand-cyan: #00d9ff;
+
+  --background: var(--gray-50);
+  --foreground: var(--gray-900);
+  --surface: var(--brand-white);
+  --border: var(--gray-200);
+
+  --gradient-brand: linear-gradient(135deg, #0057ff 0%, #7a3fff 50%, #00d9ff 100%);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --focus-ring: 0 0 0 3px rgba(0, 87, 255, 0.15);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-brand-black: var(--brand-black);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-400: var(--gray-400);
+  --color-gray-600: var(--gray-600);
+  --color-gray-900: var(--gray-900);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Gradientes institucionais */
+.bg-gradient-brand {
+  background: var(--gradient-brand);
+}
+
+.text-gradient-brand {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cards */
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Inputs */
+.input-field {
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--brand-white);
+  color: var(--gray-900);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: var(--focus-ring);
+}
+
+.input-field::placeholder {
+  color: var(--gray-400);
+}
+
+/* Animações discretas */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.25s ease-out;
+}
+
+/* Recharts — tema claro */
+.recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.recharts-tooltip-label {
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #e5e7eb;
+}
