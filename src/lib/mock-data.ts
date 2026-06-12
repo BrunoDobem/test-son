@@ -100,7 +100,7 @@ export const campaigns: Campaign[] = [
     tipo: "midia",
     label: "Som Livre",
     artista: "Ret",
-    genero: "Pop",
+    genero: "R&B",
     plataforma: "TikTok",
     mecanica: "Formulário",
     periodo: "Abr–Jun/26",
@@ -321,7 +321,7 @@ export const fans: Fan[] = [
     dataNascimento: "2001-11-08",
     label: "Som Livre",
     artista: "Ret",
-    genero: "Pop",
+    genero: "R&B",
     status: "ativo",
     score: "engajado",
     origemPrimaria: "TikTok Lead Ads",
@@ -376,7 +376,7 @@ export const fans: Fan[] = [
     dataNascimento: "1990-09-03",
     label: "Som Livre",
     artista: "Ret",
-    genero: "Pop",
+    genero: "R&B",
     status: "descadastrado",
     score: "inativo",
     origemPrimaria: "Salesforce",
@@ -599,12 +599,12 @@ export const topArtists = [
 ];
 
 export const generoDistribution = [
-  { genero: "Sertanejo", fans: 624000 },
-  { genero: "Pop", fans: 482000 },
-  { genero: "Pagode", fans: 318000 },
-  { genero: "R&B", fans: 186000 },
+  { genero: "Sertanejo", fans: 598000 },
+  { genero: "Pop", fans: 208000 },
+  { genero: "Pagode", fans: 232000 },
+  { genero: "R&B", fans: 166000 },
   { genero: "Rock", fans: 124000 },
-  { genero: "Outros", fans: 653420 },
+  { genero: "Outros", fans: 1059420 },
 ];
 
 export const geoDistribution: GeoDistributionPoint[] = [

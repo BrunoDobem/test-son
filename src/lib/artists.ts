@@ -9,7 +9,7 @@ export interface ArtistCatalogEntry {
 /** Catálogo oficial de artistas — fonte única para labels e gêneros */
 export const ARTISTS: ArtistCatalogEntry[] = [
   { nome: "Jorge e Matheus", label: "Som Livre", genero: "Sertanejo" },
-  { nome: "Ret", label: "Som Livre", genero: "Pop" },
+  { nome: "Ret", label: "Som Livre", genero: "R&B" },
   { nome: "Gusttavo Lima", label: "Sony Music", genero: "Sertanejo" },
   { nome: "Turma do Pagode", label: "Sony Music", genero: "Pagode" },
   { nome: "Luísa Sonza", label: "Sony Music", genero: "Pop" },
