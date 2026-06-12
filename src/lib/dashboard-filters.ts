@@ -1,15 +1,20 @@
 import {
   KPI_SUMMARY,
+  ageDistribution,
   baseEvolution,
   campaigns,
+  cplByChannel,
   cplByPlatform,
   dailyLeads,
   generoDistribution,
+  geoDistribution,
+  investmentEfficiency,
   labelDistribution,
   scoreDistribution,
   sourceDistribution,
   statusDistribution,
   topArtists,
+  weeklyPerformance,
 } from "./mock-data";
 import type { Label } from "./types";
 import { getPeriodDisplayLabel } from "./period-utils";
@@ -140,11 +145,26 @@ export function getFilteredKpis(filters: DashboardFilters) {
   const m = getBaseMultiplier(filters);
   const periodoFactorVal = periodoFactor(filters);
 
+  const cplFactor =
+    filters.plataforma === "TikTok" ? 1.08 : filters.plataforma === "Wyng" ? 0.82 : 1;
+
+  const midiaCampaigns = campaigns.filter((c) => c.tipo === "midia" && c.investimento > 0);
+  const avgConversao =
+    midiaCampaigns.length > 0
+      ? midiaCampaigns.reduce((s, c) => s + c.taxaConversao, 0) / midiaCampaigns.length
+      : KPI_SUMMARY.taxaConversao;
+
+  const engagedTotal = scoreDistribution
+    .filter((s) => s.name === "Superfã" || s.name === "Engajado")
+    .reduce((s, x) => s + x.value, 0);
+  const baseTotal = scoreDistribution.reduce((s, x) => s + x.value, 0);
+  const engajamentoBase = baseTotal > 0 ? (engagedTotal / baseTotal) * 100 : KPI_SUMMARY.engajamentoFans;
+
   return {
     totalFans: scale(KPI_SUMMARY.totalFans, m),
     novosMes: scale(KPI_SUMMARY.novosMes, m * periodoFactorVal),
     crescimentoMes: KPI_SUMMARY.crescimentoMes,
-    cplMedio: KPI_SUMMARY.cplMedio * (filters.plataforma === "TikTok" ? 1.08 : filters.plataforma === "Wyng" ? 0.82 : 1),
+    cplMedio: KPI_SUMMARY.cplMedio * cplFactor,
     matchRate: KPI_SUMMARY.matchRate,
     campanhasAtivas: filters.label || filters.genero || filters.plataforma
       ? Math.max(4, Math.round(KPI_SUMMARY.campanhasAtivas * m))
@@ -152,6 +172,16 @@ export function getFilteredKpis(filters: DashboardFilters) {
     deduplicados: scale(KPI_SUMMARY.deduplicados, m),
     taxaAtivos: filters.status === "ativo" ? 100 : filters.status === "inativo" ? 0 : KPI_SUMMARY.taxaAtivos,
     leadsHoje: scale(2820, m * (["7d", "today", "yesterday"].includes(filters.periodo) ? 1 : 0.85)),
+    ltv: KPI_SUMMARY.ltv * (filters.label === "Som Livre" ? 0.92 : 1),
+    churnRate:
+      filters.status === "ativo"
+        ? KPI_SUMMARY.churnRate * 0.6
+        : filters.status === "inativo"
+          ? KPI_SUMMARY.churnRate * 2.4
+          : KPI_SUMMARY.churnRate,
+    taxaConversao: avgConversao,
+    engajamentoFans: engajamentoBase,
+    roiCampanha: KPI_SUMMARY.roiCampanha * (filters.plataforma === "Wyng" ? 1.12 : 1),
   };
 }
 
@@ -244,6 +274,27 @@ export function getFilteredCplByPlatform(filters: DashboardFilters) {
   return data;
 }
 
+const PLATAFORMA_TO_CANAL: Record<string, string> = {
+  Meta: "Meta Lead Ads",
+  TikTok: "TikTok Lead Ads",
+  Wyng: "Wyng",
+};
+
+export function getFilteredCplByChannel(filters: DashboardFilters) {
+  let data = [...cplByChannel];
+  if (filters.plataforma) {
+    const canal = PLATAFORMA_TO_CANAL[filters.plataforma];
+    data = canal ? data.filter((c) => c.canal === canal) : [];
+  }
+  if (filters.label === "Som Livre") {
+    return data.map((c) => ({ ...c, cpl: c.cpl * 0.95, leads: scale(c.leads, 0.35) }));
+  }
+  if (filters.label === "Sony Music") {
+    return data.map((c) => ({ ...c, leads: scale(c.leads, 0.75) }));
+  }
+  return data;
+}
+
 export function getFilteredSourceDistribution(filters: DashboardFilters) {
   const m = getBaseMultiplier(filters);
   let data = sourceDistribution.map((s) => ({ ...s, leads: scale(s.leads, m) }));
@@ -269,6 +320,44 @@ export function getFilteredGeneroDistribution(filters: DashboardFilters) {
   let data = generoDistribution.map((g) => ({ ...g, fans: scale(g.fans, m) }));
   if (filters.genero) data = data.filter((g) => g.genero === filters.genero);
   return data;
+}
+
+export function getFilteredGeoDistribution(filters: DashboardFilters) {
+  const m = getBaseMultiplier(filters);
+  return geoDistribution.map((g) => ({ ...g, fans: scale(g.fans, m) }));
+}
+
+export function getFilteredAgeDistribution(filters: DashboardFilters) {
+  const m = getBaseMultiplier(filters);
+  return ageDistribution.map((a) => ({ ...a, fans: scale(a.fans, m) }));
+}
+
+export function getFilteredWeeklyPerformance(filters: DashboardFilters) {
+  const weeks = Math.min(8, Math.max(4, Math.ceil(resolvePeriodDays(filters) / 7)));
+  const m = getBaseMultiplier(filters);
+  const paidBoost = filters.plataforma === "Meta" || filters.plataforma === "TikTok" ? 1.15 : 1;
+  return weeklyPerformance.slice(-weeks).map((w) => ({
+    ...w,
+    leads: scale(w.leads, m),
+    pagos: scale(w.pagos, m * paidBoost),
+    organicos: scale(w.organicos, m * (filters.plataforma ? 0.75 : 1)),
+    investimento: Math.round(w.investimento * m * paidBoost),
+    cpl: w.cpl * (filters.plataforma === "TikTok" ? 1.06 : filters.plataforma === "Wyng" ? 0.9 : 1),
+  }));
+}
+
+export function getFilteredInvestmentEfficiency(filters: DashboardFilters) {
+  let data = investmentEfficiency.map((item) => ({ ...item }));
+  if (filters.plataforma) {
+    data = data.filter((item) => item.plataforma === filters.plataforma);
+  }
+  const m = getBaseMultiplier(filters);
+  return data.map((item) => ({
+    ...item,
+    investimento: Math.round(item.investimento * m),
+    leads: scale(item.leads, m),
+    receitaEstimada: Math.round(item.receitaEstimada * m),
+  }));
 }
 
 export function getFilteredCampaigns(filters: DashboardFilters) {

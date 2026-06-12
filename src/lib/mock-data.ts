@@ -1,11 +1,14 @@
 import type {
+  AgeDistributionPoint,
   Campaign,
   DailyLeadPoint,
   Fan,
+  GeoDistributionPoint,
   IngestionSource,
   ScoringRule,
   SegmentRule,
   TimeSeriesPoint,
+  WeeklyPerformancePoint,
 } from "./types";
 
 export const KPI_SUMMARY = {
@@ -18,6 +21,16 @@ export const KPI_SUMMARY = {
   campanhasAtivas: 34,
   matchRate: 94.6,
   deduplicados: 312_840,
+  /** Lifetime Value médio por fã (R$) */
+  ltv: 148.6,
+  /** Churn mensal (%) */
+  churnRate: 1.8,
+  /** Taxa de conversão média — campanhas de mídia (%) */
+  taxaConversao: 11.2,
+  /** Fãs engajados (Superfã + Engajado) sobre a base (%) */
+  engajamentoFans: 50.4,
+  /** ROI médio das campanhas pagas (%) */
+  roiCampanha: 284,
 };
 
 export const baseEvolution: TimeSeriesPoint[] = [
@@ -295,6 +308,14 @@ export const cplByPlatform = [
   { plataforma: "Wyng", cpl: 3.84, leads: 198000, investimento: 760320 },
   { plataforma: "Filtr Bot", cpl: 0, leads: 318000, investimento: 0 },
   { plataforma: "Orgânico", cpl: 0, leads: 412000, investimento: 0 },
+];
+
+/** CPL por canal de captação — campanhas pagas */
+export const cplByChannel = [
+  { canal: "Meta Lead Ads", cpl: 4.72, leads: 524_000, investimento: 2_473_280 },
+  { canal: "TikTok Lead Ads", cpl: 5.08, leads: 286_000, investimento: 1_452_880 },
+  { canal: "Wyng", cpl: 3.84, leads: 198_000, investimento: 760_320 },
+  { canal: "Página Externa", cpl: 6.12, leads: 97_000, investimento: 593_640 },
 ];
 
 export const fans: Fan[] = [
@@ -627,4 +648,40 @@ export const generoDistribution = [
   { genero: "R&B", fans: 186000 },
   { genero: "Rock", fans: 124000 },
   { genero: "Outros", fans: 653420 },
+];
+
+export const geoDistribution: GeoDistributionPoint[] = [
+  { estado: "SP", fans: 892_400, color: "#0057FF" },
+  { estado: "RJ", fans: 412_800, color: "#7A3FFF" },
+  { estado: "MG", fans: 248_600, color: "#00D9FF" },
+  { estado: "RS", fans: 186_200, color: "#059669" },
+  { estado: "PR", fans: 164_800, color: "#F59E0B" },
+  { estado: "BA", fans: 142_400, color: "#EC4899" },
+  { estado: "Outros", fans: 340_220, color: "#9CA3AF" },
+];
+
+export const ageDistribution: AgeDistributionPoint[] = [
+  { faixa: "13-17", fans: 186_400 },
+  { faixa: "18-24", fans: 486_200 },
+  { faixa: "25-34", fans: 812_600 },
+  { faixa: "35-44", fans: 524_800 },
+  { faixa: "45-54", fans: 248_200 },
+  { faixa: "55+", fans: 129_220 },
+];
+
+export const weeklyPerformance: WeeklyPerformancePoint[] = [
+  { semana: "Sem 15", leads: 12_840, pagos: 8_920, organicos: 3_920, cpl: 5.24, investimento: 46_700, roi: 242 },
+  { semana: "Sem 16", leads: 13_620, pagos: 9_480, organicos: 4_140, cpl: 5.08, investimento: 48_160, roi: 256 },
+  { semana: "Sem 17", leads: 14_280, pagos: 9_860, organicos: 4_420, cpl: 4.96, investimento: 48_900, roi: 268 },
+  { semana: "Sem 18", leads: 15_040, pagos: 10_420, organicos: 4_620, cpl: 4.88, investimento: 50_850, roi: 276 },
+  { semana: "Sem 19", leads: 15_680, pagos: 10_840, organicos: 4_840, cpl: 4.82, investimento: 52_240, roi: 281 },
+  { semana: "Sem 20", leads: 16_170, pagos: 11_240, organicos: 4_930, cpl: 4.76, investimento: 53_520, roi: 288 },
+  { semana: "Sem 21", leads: 16_820, pagos: 11_680, organicos: 5_140, cpl: 4.71, investimento: 55_020, roi: 292 },
+  { semana: "Sem 22", leads: 17_340, pagos: 12_020, organicos: 5_320, cpl: 4.68, investimento: 56_260, roi: 296 },
+];
+
+export const investmentEfficiency = [
+  { plataforma: "Meta", investimento: 2_473_280, leads: 524_000, receitaEstimada: 9_840_000, roi: 298 },
+  { plataforma: "TikTok", investimento: 1_452_880, leads: 286_000, receitaEstimada: 5_120_000, roi: 252 },
+  { plataforma: "Wyng", investimento: 760_320, leads: 198_000, receitaEstimada: 3_280_000, roi: 332 },
 ];

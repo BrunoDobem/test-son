@@ -16,7 +16,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Users, TrendingUp, DollarSign, Target } from "lucide-react";
+import {
+  Users,
+  TrendingUp,
+  Target,
+  Heart,
+  UserMinus,
+  Sparkles,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Header } from "@/components/layout/Header";
 import { KpiCard } from "@/components/ui/KpiCard";
@@ -25,14 +32,17 @@ import { DashboardFiltersBar } from "@/components/ui/DashboardFilters";
 import { ExportModal } from "@/components/ui/ExportModal";
 import {
   defaultFilters,
+  getFilteredAgeDistribution,
   getFilteredEvolution,
+  getFilteredGeneroDistribution,
+  getFilteredGeoDistribution,
   getFilteredKpis,
   getFilteredLabelDistribution,
   getFilteredStatusDistribution,
   getFilteredTopArtists,
 } from "@/lib/dashboard-filters";
 import { CHART, tooltipStyle } from "@/lib/chart-colors";
-import { formatNumber, formatCurrency } from "@/lib/utils";
+import { formatNumber, formatCurrency, formatPercent } from "@/lib/utils";
 
 const axisTick = { fill: CHART.axis, fontSize: 11 };
 
@@ -45,6 +55,10 @@ export default function DashboardExecutivoPage() {
   const labelDist = useMemo(() => getFilteredLabelDistribution(filters), [filters]);
   const statusDist = useMemo(() => getFilteredStatusDistribution(filters), [filters]);
   const artists = useMemo(() => getFilteredTopArtists(filters), [filters]);
+  const geo = useMemo(() => getFilteredGeoDistribution(filters), [filters]);
+  const ages = useMemo(() => getFilteredAgeDistribution(filters), [filters]);
+  const generos = useMemo(() => getFilteredGeneroDistribution(filters), [filters]);
+  const maxGenero = generos[0]?.fans ?? 1;
 
   return (
     <AppShell>
@@ -57,9 +71,13 @@ export default function DashboardExecutivoPage() {
 
       <DashboardFiltersBar filters={filters} onChange={setFilters} variant="executivo" />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Visão Geral da Base</h2>
+        <p className="mt-1 text-xs text-gray-400">Funil de aquisição · visibilidade consolidada em tempo real</p>
+      </div>
+      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          label="Base Total Brasil"
+          label="Total de Leads Consolidados"
           value={formatNumber(kpis.totalFans)}
           change={kpis.crescimentoMes}
           changeLabel="vs mês anterior"
@@ -75,20 +93,46 @@ export default function DashboardExecutivoPage() {
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <KpiCard
-          label="CPL Médio"
-          value={formatCurrency(kpis.cplMedio)}
-          change={-2.1}
-          changeLabel="vs trimestre"
-          accent="cyan"
-          icon={<DollarSign className="h-4 w-4" />}
-        />
-        <KpiCard
           label="Taxa de Match"
           value={`${kpis.matchRate}%`}
           change={0.8}
           changeLabel="deduplicação"
-          accent="success"
+          accent="cyan"
           icon={<Target className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Taxa Ativos"
+          value={`${kpis.taxaAtivos}%`}
+          change={0.3}
+          changeLabel="vs mês anterior"
+          accent="success"
+          icon={<Users className="h-4 w-4" />}
+        />
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="LTV"
+          value={formatCurrency(kpis.ltv)}
+          change={4.2}
+          changeLabel="vs trimestre"
+          accent="blue"
+          icon={<Sparkles className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Churn Rate"
+          value={formatPercent(kpis.churnRate)}
+          changeLabel="mensal"
+          accent="purple"
+          icon={<UserMinus className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Engajamento/Fã"
+          value={formatPercent(kpis.engajamentoFans)}
+          change={0.9}
+          changeLabel="Superfã + Engajado"
+          accent="cyan"
+          icon={<Heart className="h-4 w-4" />}
         />
       </div>
 
@@ -153,24 +197,57 @@ export default function DashboardExecutivoPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card title="Status da Base" subtitle="Ativos, inativos e descadastrados (LGPD)">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card title="Segmentação Geográfica" subtitle="Distribuição por estado — Brasil">
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={statusDist} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
-              <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => formatNumber(v)} />
-              <YAxis type="category" dataKey="name" tick={axisTick} axisLine={false} tickLine={false} width={100} />
+            <BarChart data={geo}>
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+              <XAxis dataKey="estado" tick={axisTick} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => formatNumber(v)} />
               <Tooltip contentStyle={tooltipStyle} formatter={(value) => formatNumber(Number(value ?? 0))} />
-              <Bar dataKey="value">
-                {statusDist.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
+              <Bar dataKey="fans">
+                {geo.map((entry) => (
+                  <Cell key={entry.estado} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Top Artistas" subtitle="Maiores bases de fãs unificados">
+        <Card title="Segmentação Demográfica" subtitle="Faixa etária da base unificada">
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={ages} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
+              <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => formatNumber(v)} />
+              <YAxis type="category" dataKey="faixa" tick={axisTick} axisLine={false} tickLine={false} width={48} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value) => formatNumber(Number(value ?? 0))} />
+              <Bar dataKey="fans" fill={CHART.purple} radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card title="Segmentação por Gênero Musical" subtitle="Demográfico — preferência musical">
+          <div className="space-y-3">
+            {generos.map((g) => (
+              <div key={g.genero}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">{g.genero}</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(g.fans)}</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-full rounded-full bg-brand-blue"
+                    style={{ width: `${(g.fans / maxGenero) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="Segmentação por Artista" subtitle="Maiores bases de fãs unificados">
           <div className="space-y-4">
             {artists.length === 0 ? (
               <p className="text-sm text-gray-500">Nenhum artista para os filtros selecionados.</p>
@@ -197,6 +274,22 @@ export default function DashboardExecutivoPage() {
           </div>
         </Card>
       </div>
+
+      <Card title="Status de Atividade" subtitle="Ativos, inativos e descadastrados (LGPD)">
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={statusDist} layout="vertical">
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
+            <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => formatNumber(v)} />
+            <YAxis type="category" dataKey="name" tick={axisTick} axisLine={false} tickLine={false} width={100} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(value) => formatNumber(Number(value ?? 0))} />
+            <Bar dataKey="value">
+              {statusDist.map((entry) => (
+                <Cell key={entry.name} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Card>
 
       <ExportModal
         open={exportOpen}

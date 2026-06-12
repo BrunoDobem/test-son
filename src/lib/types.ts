@@ -99,3 +99,24 @@ export interface DailyLeadPoint {
   pagos: number;
   organicos: number;
 }
+
+export interface WeeklyPerformancePoint {
+  semana: string;
+  leads: number;
+  pagos: number;
+  organicos: number;
+  cpl: number;
+  investimento: number;
+  roi: number;
+}
+
+export interface GeoDistributionPoint {
+  estado: string;
+  fans: number;
+  color: string;
+}
+
+export interface AgeDistributionPoint {
+  faixa: string;
+  fans: number;
+}
