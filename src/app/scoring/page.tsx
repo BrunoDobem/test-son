@@ -7,12 +7,15 @@ import { Header } from "@/components/layout/Header";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { scoreDistribution, scoringRules } from "@/lib/mock-data";
-import { formatNumber } from "@/lib/utils";
+import { KPI_SUMMARY, scoringRules } from "@/lib/mock-data";
+import { computeEngajamentoPercent, computeScoreDistribution } from "@/lib/scoring";
+import { formatNumber, formatPercent } from "@/lib/utils";
 
 export default function ScoringPage() {
   const [rules, setRules] = useState(scoringRules);
   const totalPeso = rules.filter((r) => r.ativo).reduce((s, r) => s + r.peso, 0);
+  const distribution = computeScoreDistribution(rules, KPI_SUMMARY.totalFans);
+  const engajamento = computeEngajamentoPercent(distribution);
 
   return (
     <AppShell>
@@ -22,15 +25,26 @@ export default function ScoringPage() {
       />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {scoreDistribution.map((s) => (
+        {distribution.map((s) => (
           <div key={s.name} className="card-surface p-5 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full" style={{ background: s.color }} />
               <span className="text-xs font-medium text-gray-500">{s.name}</span>
             </div>
             <p className="mt-2 text-xl font-bold text-gray-900">{formatNumber(s.value)}</p>
+            <p className="mt-1 text-xs text-gray-400">
+              {formatPercent((s.value / KPI_SUMMARY.totalFans) * 100)} da base
+            </p>
           </div>
         ))}
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-4">
+        <p className="text-sm text-gray-700">
+          Engajamento (Superfã + Engajado):{" "}
+          <span className="font-bold text-brand-blue">{formatPercent(engajamento)}</span>
+          <span className="text-gray-500"> — recalculado conforme pesos das regras ativas</span>
+        </p>
       </div>
 
       <Card

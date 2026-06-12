@@ -5,8 +5,9 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Header } from "@/components/layout/Header";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { ingestionSources } from "@/lib/mock-data";
-import { formatNumber } from "@/lib/utils";
+import { ingestionSources, KPI_SUMMARY } from "@/lib/mock-data";
+import { getLeadsHoje, getRegistrosHoje, getTaxaDedupVolume } from "@/lib/metrics";
+import { formatNumber, formatPercent } from "@/lib/utils";
 
 const statusConfig = {
   ativo: { icon: CheckCircle2, variant: "success" as const, label: "Ativo", color: "text-emerald-600" },
@@ -21,7 +22,8 @@ const metodoLabel = {
 };
 
 export default function IngestaoPage() {
-  const totalHoje = ingestionSources.reduce((s, src) => s + src.registrosHoje, 0);
+  const totalHoje = getRegistrosHoje();
+  const leadsHoje = getLeadsHoje();
 
   return (
     <AppShell>
@@ -45,15 +47,19 @@ export default function IngestaoPage() {
             <span className="text-xs font-semibold uppercase tracking-wider text-brand-blue">Registros Hoje</span>
           </div>
           <p className="mt-2 text-2xl font-bold text-gray-900">{formatNumber(totalHoje)}</p>
-          <p className="mt-1 text-xs text-gray-500">Todas as fontes</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Alinhado com Leads Hoje no dashboard ({formatNumber(leadsHoje)})
+          </p>
         </div>
         <div className="card-surface border-l-4 border-l-brand-purple p-6">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-brand-purple" />
             <span className="text-xs font-semibold uppercase tracking-wider text-brand-purple">Match Rate</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-gray-900">94,6%</p>
-          <p className="mt-1 text-xs text-gray-500">Golden record</p>
+          <p className="mt-2 text-2xl font-bold text-gray-900">{formatPercent(KPI_SUMMARY.matchRate)}</p>
+          <p className="mt-1 text-xs text-gray-500">
+            {formatNumber(KPI_SUMMARY.deduplicados)} fundidos ({formatPercent(getTaxaDedupVolume())} do bruto)
+          </p>
         </div>
       </div>
 

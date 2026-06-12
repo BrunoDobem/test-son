@@ -100,7 +100,7 @@ export function DashboardFiltersBar({ filters, onChange, variant }: DashboardFil
               >
                 <option value="">Todos</option>
                 <option value="Pop">Pop</option>
-                <option value="Funk">Funk</option>
+                <option value="Pagode">Pagode</option>
                 <option value="Sertanejo">Sertanejo</option>
                 <option value="R&B">R&B</option>
                 <option value="Rock">Rock</option>

@@ -1,3 +1,4 @@
+import { getArtistsByGenero, SOM_LIVRE_ARTISTS, SONY_ARTISTS } from "./artists";
 import {
   KPI_SUMMARY,
   ageDistribution,
@@ -10,13 +11,15 @@ import {
   geoDistribution,
   investmentEfficiency,
   labelDistribution,
-  scoreDistribution,
+  scoringRules,
   sourceDistribution,
   statusDistribution,
   topArtists,
   weeklyPerformance,
 } from "./mock-data";
-import type { Label } from "./types";
+import { getLeadsHoje } from "./metrics";
+import { computeEngajamentoPercent, computeScoreDistribution } from "./scoring";
+import type { Label, ScoringRule } from "./types";
 import { getPeriodDisplayLabel } from "./period-utils";
 
 export type PeriodoPreset =
@@ -154,11 +157,8 @@ export function getFilteredKpis(filters: DashboardFilters) {
       ? midiaCampaigns.reduce((s, c) => s + c.taxaConversao, 0) / midiaCampaigns.length
       : KPI_SUMMARY.taxaConversao;
 
-  const engagedTotal = scoreDistribution
-    .filter((s) => s.name === "Superfã" || s.name === "Engajado")
-    .reduce((s, x) => s + x.value, 0);
-  const baseTotal = scoreDistribution.reduce((s, x) => s + x.value, 0);
-  const engajamentoBase = baseTotal > 0 ? (engagedTotal / baseTotal) * 100 : KPI_SUMMARY.engajamentoFans;
+  const scoreDist = computeScoreDistribution(scoringRules, scale(KPI_SUMMARY.totalFans, m));
+  const engajamentoBase = computeEngajamentoPercent(scoreDist);
 
   return {
     totalFans: scale(KPI_SUMMARY.totalFans, m),
@@ -171,7 +171,7 @@ export function getFilteredKpis(filters: DashboardFilters) {
       : KPI_SUMMARY.campanhasAtivas,
     deduplicados: scale(KPI_SUMMARY.deduplicados, m),
     taxaAtivos: filters.status === "ativo" ? 100 : filters.status === "inativo" ? 0 : KPI_SUMMARY.taxaAtivos,
-    leadsHoje: scale(2820, m * (["7d", "today", "yesterday"].includes(filters.periodo) ? 1 : 0.85)),
+    leadsHoje: scale(getLeadsHoje(), m),
     ltv: KPI_SUMMARY.ltv * (filters.label === "Som Livre" ? 0.92 : 1),
     churnRate:
       filters.status === "ativo"
@@ -231,19 +231,13 @@ export function getFilteredStatusDistribution(filters: DashboardFilters) {
 export function getFilteredTopArtists(filters: DashboardFilters) {
   let list = [...topArtists];
   if (filters.label === "Som Livre") {
-    list = list.filter((a) => ["Jorge & Mateus", "Gusttavo Lima"].includes(a.artista));
+    list = list.filter((a) => SOM_LIVRE_ARTISTS.includes(a.artista));
   } else if (filters.label === "Sony Music") {
-    list = list.filter((a) => !["Jorge & Mateus", "Gusttavo Lima"].includes(a.artista));
+    list = list.filter((a) => SONY_ARTISTS.includes(a.artista));
   }
   if (filters.genero) {
-    const genreMap: Record<string, string[]> = {
-      Pop: ["Anitta"],
-      Funk: ["Ludmilla"],
-      Sertanejo: ["Jorge & Mateus", "Gusttavo Lima", "Zé Neto & Cristiano"],
-      "R&B": [],
-    };
-    const allowed = genreMap[filters.genero];
-    if (allowed) list = list.filter((a) => allowed.includes(a.artista));
+    const allowed = getArtistsByGenero(filters.genero);
+    if (allowed.length > 0) list = list.filter((a) => allowed.includes(a.artista));
   }
   const m = getBaseMultiplier(filters);
   return list.map((a) => ({ ...a, fans: scale(a.fans, m) }));
@@ -310,9 +304,12 @@ export function getFilteredSourceDistribution(filters: DashboardFilters) {
   return data;
 }
 
-export function getFilteredScoreDistribution(filters: DashboardFilters) {
+export function getFilteredScoreDistribution(
+  filters: DashboardFilters,
+  rules: ScoringRule[] = scoringRules
+) {
   const m = getBaseMultiplier(filters);
-  return scoreDistribution.map((s) => ({ ...s, value: scale(s.value, m) }));
+  return computeScoreDistribution(rules, scale(KPI_SUMMARY.totalFans, m));
 }
 
 export function getFilteredGeneroDistribution(filters: DashboardFilters) {
